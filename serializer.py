@@ -1,24 +1,19 @@
-import json
+from datetime import datetime, date
+from tinydb.storages import JSONStorage
+from tinydb_serialization import Serializer, SerializationMiddleware
 
-class Serializer:
-    def __init__(self, *args, **kwargs):
-        pass
+from tinydb_serialization.serializers import DateTimeSerializer
 
-    def read(self):
-        # Implementiere die Logik zum Lesen der Daten
-        pass
+class DateSerializer(Serializer):
+    # The class this serializer handles --> must be date instead of datetime.date
+    OBJ_CLASS = date
 
-    def write(self, data):
-        # Implementiere die Logik zum Schreiben der Daten
-        pass
+    def encode(self, obj):
+        return obj.isoformat()
 
+    def decode(self, s):
+        return datetime.fromisoformat(s).date()
 
-    @staticmethod
-    def serialize(data):
-        """Serialisiert die Daten in JSON-Format."""
-        return json.dumps(data)
-
-    @staticmethod
-    def deserialize(serialized_data):
-        """Deserialisiert die Daten aus JSON-Format."""
-        return json.loads(serialized_data)
+serializer = SerializationMiddleware(JSONStorage)
+serializer.register_serializer(DateTimeSerializer(), 'TinyDateTime')
+serializer.register_serializer(DateSerializer(), 'TinyDate')
