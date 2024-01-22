@@ -49,17 +49,27 @@ if selected_option == "Geräteverwaltung":
                 st.rerun()
 
 elif selected_option == "Nutzerverwaltung":
-    # Nutzerverwaltung
     st.write("## Nutzerverwaltung")
 
     with st.form("User"):
         user_name = st.text_input("Nutzername")
         email = st.text_input("E-Mail-Adresse")
 
-        # Every form must have a submit button.
         submitted_user = st.form_submit_button("Nutzer anlegen")
+
         if submitted_user:
-            new_user = User(user_name, email)
-            new_user.store_data()
-            st.write("Nutzer angelegt.")
-            st.rerun()
+
+            if not user_name.strip() or not email.strip():
+                st.warning("Beide Felder müssen ausgefüllt werden!")
+            else:
+
+                # Überprüfen, ob der Benutzer bereits existiert
+                existing_user = User.user_exists(email)
+
+                if existing_user:
+                    st.warning("Nutzer mit dieser E-Mail existiert bereits!")
+                else:
+                    new_user = User(user_name, email)
+                    new_user.store_data()
+                    st.write("Nutzer angelegt.")
+            
