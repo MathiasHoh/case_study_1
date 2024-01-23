@@ -60,6 +60,7 @@ if selected_option == "Geräteverwaltung":
                 text_input_val = st.text_input("Geräte-Verantwortlicher", value=loaded_device.managed_by_user_id)
                 loaded_device.managed_by_user_id = text_input_val
 
+
                 submitted = st.form_submit_button("Submit")
 
                 # Every form must have a submit button.
@@ -69,6 +70,7 @@ if selected_option == "Geräteverwaltung":
                         loaded_device.store_data()
                         st.write("Data stored.")
                         st.rerun()
+
 
 elif selected_option == "Nutzerverwaltung":
     st.write("## Nutzerverwaltung")
