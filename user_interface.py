@@ -15,38 +15,56 @@ if selected_option == "Geräteverwaltung":
     # Geräteverwaltung
     st.write("## Geräteverwaltung")
 
-    # Eine Auswahlbox mit hard-gecoded Optionen, das Ergebnis wird in current_device_example gespeichert
-    current_device_example = st.selectbox(
-        'Gerät auswählen',
-        options=["Gerät_A", "Gerät_B"], key="sbDevice_example")
+    # Sub-navigation for Create/Modify Device
+    device_action = st.sidebar.radio("Gerät anlegen/ändern", ["Neues Gerät", "Gerät ändern"])
 
-    # Eine Auswahlbox mit Datenbankabfrage, das Ergebnis wird in current_device gespeichert
-    devices_in_db = find_devices()
+    if device_action == "Neues Gerät":
+        # If creating a new device
+        with st.form("New Device"):
+            st.write("Neues Gerät hinzufügen")
 
-    if devices_in_db:
-        current_device_name = st.selectbox(
-            'Gerät auswählen',
-            options=devices_in_db, key="sbDevice")
-
-        if current_device_name in devices_in_db:
-            loaded_device = Device.load_data_by_device_name(current_device_name)
-            st.write(f"Loaded Device: {loaded_device}")
-
-        with st.form("Device"):
-            st.write(loaded_device.device_name)
-
-            checkbox_val = st.checkbox("Is active?", value=loaded_device.is_active)
-            loaded_device.is_active = checkbox_val
-
-            text_input_val = st.text_input("Geräte-Verantwortlicher", value=loaded_device.managed_by_user_id)
-            loaded_device.managed_by_user_id = text_input_val
+            device_name = st.text_input("Gerätename")
+            managed_by_user_id = st.text_input("Geräte-Verantwortlicher (Nutzer-ID)")
 
             # Every form must have a submit button.
-            submitted = st.form_submit_button("Submit")
-            if submitted:
-                loaded_device.store_data()
-                st.write("Data stored.")
-                st.rerun()
+            submitted_new_device = st.form_submit_button("Neues Gerät hinzufügen")
+            if submitted_new_device:
+                # Check if user_id exists before creating the device
+                if User.user_exists(managed_by_user_id):
+                    new_device = Device(device_name, managed_by_user_id)
+                    new_device.store_data()
+                    st.write("Neues Gerät hinzugefügt.")
+                else:
+                    st.warning("Geräte-Verantwortlicher mit dieser ID existiert nicht.")
+
+    elif device_action == "Gerät ändern":
+        # Existing code for modifying existing device remains unchanged
+        devices_in_db = find_devices()
+
+        if devices_in_db:
+            current_device_name = st.selectbox(
+                'Gerät auswählen',
+                options=devices_in_db, key="sbDevice")
+
+            if current_device_name in devices_in_db:
+                loaded_device = Device.load_data_by_device_name(current_device_name)
+                st.write(f"Loaded Device: {loaded_device}")
+
+            with st.form("Device"):
+                st.write(loaded_device.device_name)
+
+                checkbox_val = st.checkbox("Is active?", value=loaded_device.is_active)
+                loaded_device.is_active = checkbox_val
+
+                text_input_val = st.text_input("Geräte-Verantwortlicher", value=loaded_device.managed_by_user_id)
+                loaded_device.managed_by_user_id = text_input_val
+
+                # Every form must have a submit button.
+                submitted = st.form_submit_button("Submit")
+                if submitted:
+                    loaded_device.store_data()
+                    st.write("Data stored.")
+                    st.rerun()
 
 elif selected_option == "Nutzerverwaltung":
     st.write("## Nutzerverwaltung")
