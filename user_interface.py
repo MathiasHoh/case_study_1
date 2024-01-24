@@ -4,6 +4,7 @@ import streamlit as st
 from queries import find_devices
 from devices import Device
 from users import User
+from validate_email_address import validate_email
 
 # Eine Überschrift der ersten Ebene
 st.write("# Gerätemanagement")
@@ -59,12 +60,15 @@ if selected_option == "Geräteverwaltung":
                 text_input_val = st.text_input("Geräte-Verantwortlicher", value=loaded_device.managed_by_user_id)
                 loaded_device.managed_by_user_id = text_input_val
 
-                # Every form must have a submit button.
                 submitted = st.form_submit_button("Submit")
-                if submitted:
-                    loaded_device.store_data()
-                    st.write("Data stored.")
-                    st.rerun()
+
+                # Every form must have a submit button.
+                if User.user_exists(loaded_device.managed_by_user_id):
+                    
+                    if submitted:
+                        loaded_device.store_data()
+                        st.write("Data stored.")
+                        st.rerun()
 
 elif selected_option == "Nutzerverwaltung":
     st.write("## Nutzerverwaltung")
@@ -76,18 +80,6 @@ elif selected_option == "Nutzerverwaltung":
         submitted_user = st.form_submit_button("Nutzer anlegen")
 
         if submitted_user:
-
-            if not user_name.strip() or not email.strip():
-                st.warning("Beide Felder müssen ausgefüllt werden!")
-            else:
-
-                # Überprüfen, ob der Benutzer bereits existiert
-                existing_user = User.user_exists(email)
-
-                if existing_user:
-                    st.warning("Nutzer mit dieser E-Mail existiert bereits!")
-                else:
-                    new_user = User(user_name, email)
-                    new_user.store_data()
-                    st.write("Nutzer angelegt.")
-            
+            # Methode in der User-Klasse aufrufen
+            result_message = User.validate_and_create_user(user_name, email)
+            st.write(result_message)
