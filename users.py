@@ -16,14 +16,14 @@ class User:
     def store_data(self):
         print("Storing user data...")
 
-        # Überprüfen, ob der Benutzer bereits existiert
+        # Überprüfen, ob der Benutzer bereits existiert.
         user_query = Query()
         existing_user = self.db_connector.search(user_query.name == self.name)
 
         if existing_user:
             print("User already exists.")
         else:
-            # Wenn der Benutzer nicht existiert, in die Datenbank schreiben
+            # Wenn der Benutzer nicht existiert, in die Datenbank schreiben.
             self.db_connector.insert({'name': self.name, 'id': self.id})
             print("User data inserted.")
 
