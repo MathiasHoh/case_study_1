@@ -47,7 +47,7 @@ class User:
             return "Bitte fülle beide Felder aus."
 
         # Überprüfen, ob die E-Mail-Adresse gültig ist und die gewünschte Endung hat
-        if not validate_email(email) or not email.endswith((".at", ".de")):
+        if not validate_email(email) or not email.endswith((".at", ".de", ".com")):
             return "Ungültige E-Mail-Adresse oder falsche Endung."
 
         # Überprüfen, ob der Benutzer bereits existiert

@@ -16,30 +16,31 @@ if selected_option == "Geräteverwaltung":
     # Geräteverwaltung
     st.write("## Geräteverwaltung")
 
-    # Sub-navigation for Create/Modify Device
+    # Gerät erstellen oder ändern
     device_action = st.sidebar.radio("Gerät anlegen/ändern", ["Neues Gerät", "Gerät ändern"])
 
     if device_action == "Neues Gerät":
-        # If creating a new device
+        # Wenn ein neues Gerät erstellt wird
         with st.form("New Device"):
-            st.write("Neues Gerät hinzufügen")
 
             device_name = st.text_input("Gerätename")
             managed_by_user_id = st.text_input("Geräte-Verantwortlicher (Nutzer-ID)")
-
-            # Every form must have a submit button.
+        
+            # Platzieren Sie den Submit-Button unter dem Eingabefeld
             submitted_new_device = st.form_submit_button("Neues Gerät hinzufügen")
-            if submitted_new_device:
-                # Check if user_id exists before creating the device
+
+            if submitted_new_device and not Device.device_exists(device_name):
                 if User.user_exists(managed_by_user_id):
                     new_device = Device(device_name, managed_by_user_id)
                     new_device.store_data()
                     st.write("Neues Gerät hinzugefügt.")
                 else:
-                    st.warning("Geräte-Verantwortlicher mit dieser ID existiert nicht.")
+                    st.warning("Dieser Benutzer ist nicht angelegt.")
+            elif Device.device_exists(device_name):
+                st.warning("Gerät mit diesem Namen existiert bereits.")
 
     elif device_action == "Gerät ändern":
-        # Existing code for modifying existing device remains unchanged
+        # Bestehendes Gerät ändern
         devices_in_db = find_devices()
 
         if devices_in_db:
@@ -62,7 +63,7 @@ if selected_option == "Geräteverwaltung":
 
                 submitted = st.form_submit_button("Submit")
 
-                # Every form must have a submit button.
+                # Submit button
                 if User.user_exists(loaded_device.managed_by_user_id):
                     
                     if submitted:

@@ -10,6 +10,19 @@ class Device():
     # Class variable that is shared between all instances of the class
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'), storage=serializer).table('devices')
 
+    @classmethod
+    def device_exists(cls, device_name):
+        print("Checking if device exists...")
+        DeviceQuery = Query()
+        result = cls.db_connector.search(DeviceQuery.device_name == device_name)
+
+        if result:
+            print("Device already exists.")
+            return True
+        else:
+            print("Device does not exist.")
+            return False
+
     # Constructor
     def __init__(self, device_name : str, managed_by_user_id : str):
         self.device_name = device_name
@@ -52,6 +65,7 @@ class Device():
             return cls(data['device_name'], data['managed_by_user_id'])
         else:
             return None
+
 
 
 
