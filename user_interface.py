@@ -4,6 +4,7 @@ import streamlit as st
 from queries import find_devices
 from devices import Device
 from users import User
+from validate_email_address import validate_email
 
 # Eine Überschrift der ersten Ebene
 st.write("# Gerätemanagement")
@@ -15,39 +16,64 @@ if selected_option == "Geräteverwaltung":
     # Geräteverwaltung
     st.write("## Geräteverwaltung")
 
-    # Eine Auswahlbox mit hard-gecoded Optionen, das Ergebnis wird in current_device_example gespeichert
-    current_device_example = st.selectbox(
-        'Gerät auswählen',
-        options=["Gerät_A", "Gerät_B"], key="sbDevice_example")
+    # Gerät erstellen oder ändern
+    device_action = st.sidebar.radio("Gerät anlegen/ändern", ["Neues Gerät", "Gerät ändern"])
 
-    # Eine Auswahlbox mit Datenbankabfrage, das Ergebnis wird in current_device gespeichert
-    devices_in_db = find_devices()
+    if device_action == "Neues Gerät":
+        # Wenn ein neues Gerät erstellt wird
+        with st.form("New Device"):
+            st.write("Neues Gerät hinzufügen")
 
-    if devices_in_db:
-        current_device_name = st.selectbox(
-            'Gerät auswählen',
-            options=devices_in_db, key="sbDevice")
+            device_name = st.text_input("Gerätename")
+            managed_by_user_id = st.text_input("Geräte-Verantwortlicher (Nutzer-ID)")
 
-        if current_device_name in devices_in_db:
-            loaded_device = Device.load_data_by_device_name(current_device_name)
-            st.write(f"Loaded Device: {loaded_device}")
+            # Submit button
+            submitted_new_device = st.form_submit_button("Neues Gerät hinzufügen")
 
-        with st.form("Device"):
-            st.write(loaded_device.device_name)
+            if submitted_new_device and not Device.device_exists(device_name):
+                if User.user_exists(managed_by_user_id):
+                    new_device = Device(device_name, managed_by_user_id)
+                    new_device.store_data()
+                    st.write("Neues Gerät hinzugefügt.")
+                else:
+                    st.warning("Dieser Benutzer ist nicht angelegt.")
+            elif Device.device_exists(device_name):
+                st.warning("Gerät mit diesem Namen existiert bereits.")
 
-            checkbox_val = st.checkbox("Is active?", value=loaded_device.is_active)
-            loaded_device.is_active = checkbox_val
+    elif device_action == "Gerät ändern":
+        # Bestehendes Gerät ändern
+        devices_in_db = find_devices()
 
-            text_input_val = st.text_input("Geräte-Verantwortlicher", value=loaded_device.managed_by_user_id)
-            loaded_device.managed_by_user_id = text_input_val
+        if devices_in_db:
+            current_device_name = st.selectbox(
+                'Gerät auswählen',
+                options=devices_in_db, key="sbDevice")
 
-            # Every form must have a submit button.
-            submitted = st.form_submit_button("Submit")
-            if submitted:
-                loaded_device.store_data()
-                st.write("Data stored.")
-                st.rerun()
+            if current_device_name in devices_in_db:
+                loaded_device = Device.load_data_by_device_name(current_device_name)
+                st.write(f"Loaded Device: {loaded_device}")
 
+            with st.form("Device"):
+                st.write(loaded_device.device_name)
+
+                checkbox_val = st.checkbox("Is active?", value=loaded_device.is_active)
+                loaded_device.is_active = checkbox_val
+
+                text_input_val = st.text_input("Geräte-Verantwortlicher", value=loaded_device.managed_by_user_id)
+                loaded_device.managed_by_user_id = text_input_val
+
+
+                submitted = st.form_submit_button("Submit")
+
+                # Submit button.
+
+                if User.user_exists(loaded_device.managed_by_user_id):
+                    
+                    if submitted:
+                        loaded_device.store_data()
+                        st.write("Data stored.")
+                        st.rerun()
+                        
 elif selected_option == "Nutzerverwaltung":
     st.write("## Nutzerverwaltung")
 
@@ -58,18 +84,6 @@ elif selected_option == "Nutzerverwaltung":
         submitted_user = st.form_submit_button("Nutzer anlegen")
 
         if submitted_user:
-
-            if not user_name.strip() or not email.strip():
-                st.warning("Beide Felder müssen ausgefüllt werden!")
-            else:
-
-                # Überprüfen, ob der Benutzer bereits existiert
-                existing_user = User.user_exists(email)
-
-                if existing_user:
-                    st.warning("Nutzer mit dieser E-Mail existiert bereits!")
-                else:
-                    new_user = User(user_name, email)
-                    new_user.store_data()
-                    st.write("Nutzer angelegt.")
-            
+            # Methode in der User-Klasse aufrufen
+            result_message = User.validate_and_create_user(user_name, email)
+            st.write(result_message)
