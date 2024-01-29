@@ -10,7 +10,7 @@ from validate_email_address import validate_email
 st.write("# Gerätemanagement")
 
 # Navigation
-selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung"])
+selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung","Wartungssystem"])
 
 if selected_option == "Geräteverwaltung":
     # Geräteverwaltung
@@ -87,3 +87,6 @@ elif selected_option == "Nutzerverwaltung":
             # Methode in der User-Klasse aufrufen
             result_message = User.validate_and_create_user(user_name, email)
             st.write(result_message)
+
+elif selected_option== "Wartungssystem"
+    st.write("## Wartungssystem")
