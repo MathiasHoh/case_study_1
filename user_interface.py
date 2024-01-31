@@ -10,7 +10,7 @@ from validate_email_address import validate_email
 st.write("# Gerätemanagement")
 
 # Navigation
-selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung"])
+selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung", "Reservierungssystem"])
 
 if selected_option == "Geräteverwaltung":
     # Geräteverwaltung
@@ -38,7 +38,8 @@ if selected_option == "Geräteverwaltung":
                     st.warning("Dieser Benutzer ist nicht angelegt.")
             elif Device.device_exists(device_name):
                 st.warning("Gerät mit diesem Namen existiert bereits.")
-
+                
+           
     elif device_action == "Gerät ändern":
         # Bestehendes Gerät ändern
         devices_in_db = find_devices()
@@ -71,6 +72,16 @@ if selected_option == "Geräteverwaltung":
                         st.write("Data stored.")
                         st.rerun()
 
+            # Button um ein Gerät zu löschen
+            if st.button("Gerät löschen"):
+                deleted = Device.delete_device(current_device_name)
+                if deleted:
+                    st.write(F"Gerät {current_device_name} wurde gelöscht!")
+                else:
+                    st.warning(F"Gerät {current_device_name} nicht gefunden!")
+
+# Nutzerverwaltung
+
 elif selected_option == "Nutzerverwaltung":
     st.write("## Nutzerverwaltung")
 
@@ -84,3 +95,21 @@ elif selected_option == "Nutzerverwaltung":
             # Methode in der User-Klasse aufrufen
             result_message = User.validate_and_create_user(user_name, email)
             st.write(result_message)
+
+# Reservierungssystem
+            
+elif selected_option == "Reservierungssystem":
+    st.write("## Reservierungssystem")
+    devices_in_db = find_devices()
+
+    if devices_in_db:
+        current_device_name = st.selectbox(
+            'Gerät auswählen',
+        options=devices_in_db, key="sbDevice")
+
+        if current_device_name in devices_in_db:
+            loaded_device = Device.load_data_by_device_name(current_device_name)
+            st.write(f":{loaded_device}")
+
+   # with st.form("Reservierungen"):
+        

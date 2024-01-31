@@ -19,7 +19,7 @@ class Device():
         if result:
             print("Device already exists.")
             return True
-        else:
+        if result:
             print("Device does not exist.")
             return False
 
@@ -65,6 +65,13 @@ class Device():
             return cls(data['device_name'], data['managed_by_user_id'])
         else:
             return None
+    
+    @classmethod
+    def delete_device(cls, device_name):
+        DeviceQuery = Query()
+        result = cls.db_connector.remove(DeviceQuery.device_name == device_name)
+
+        return result
 
 
 
