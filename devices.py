@@ -1,5 +1,5 @@
 import os
-
+from datetime import datetime,timedelta
 from users import User
 
 from tinydb import TinyDB, Query
@@ -19,7 +19,9 @@ class Device():
         if result:
             print("Device already exists.")
             return True
-        if result:
+          
+        else:
+
             print("Device does not exist.")
             return False
 
@@ -30,7 +32,8 @@ class Device():
         # We don't store the user object itself, but only the id (as a key)
         self.managed_by_user_id = managed_by_user_id
         self.is_active = True
-        
+        #Datum hinzufügen vom Gerät für Wartung
+        self.created_at = datetime.now()
     # String representation of the class
     def __str__(self):
         return f'Device {self.device_name} ({self.managed_by_user_id})'

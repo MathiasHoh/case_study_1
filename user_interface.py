@@ -1,17 +1,22 @@
 ### Erste Streamlit App
-
 import streamlit as st
 from queries import find_devices
 from devices import Device
 from users import User
 from validate_email_address import validate_email
+
 from reservierungssystem import ReservationSystem
+
+from wartung import Wartungskalender
+from datetime import datetime,timedelta
 
 # Eine Überschrift der ersten Ebene
 st.write("# Gerätemanagement")
 
 # Navigation
-selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung", "Reservierungssystem"])
+
+selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung", "Reservierungssystem","Wartungssystem"])
+
 
 if selected_option == "Geräteverwaltung":
     # Geräteverwaltung
@@ -26,8 +31,9 @@ if selected_option == "Geräteverwaltung":
 
             device_name = st.text_input("Gerätename")
             managed_by_user_id = st.text_input("Geräte-Verantwortlicher (Nutzer-ID)")
-        
-            # Platzieren Sie den Submit-Button unter dem Eingabefeld
+
+            # Submit button
+
             submitted_new_device = st.form_submit_button("Neues Gerät hinzufügen")
 
             if submitted_new_device and not Device.device_exists(device_name):
@@ -39,8 +45,7 @@ if selected_option == "Geräteverwaltung":
                     st.warning("Dieser Benutzer ist nicht angelegt.")
             elif Device.device_exists(device_name):
                 st.warning("Gerät mit diesem Namen existiert bereits.")
-                
-           
+
     elif device_action == "Gerät ändern":
         # Bestehendes Gerät ändern
         devices_in_db = find_devices()
@@ -66,12 +71,16 @@ if selected_option == "Geräteverwaltung":
                 # Submit button
                 submitted = st.form_submit_button("Submit")
 
+
+
+
                 if User.user_exists(loaded_device.managed_by_user_id):
                     
                     if submitted:
                         loaded_device.store_data()
                         st.write("Data stored.")
                         st.rerun()
+
 
             # Button um ein Gerät zu löschen
             if st.button("Gerät löschen"):
@@ -81,7 +90,6 @@ if selected_option == "Geräteverwaltung":
                 else:
                     st.warning(F"Gerät {current_device_name} nicht gefunden!")
 
-# Nutzerverwaltung
 
 elif selected_option == "Nutzerverwaltung":
     st.write("## Nutzerverwaltung")
@@ -96,6 +104,7 @@ elif selected_option == "Nutzerverwaltung":
             # Methode in der User-Klasse aufrufen
             result_message = User.validate_and_create_user(user_name, email)
             st.write(result_message)
+
 
 # Reservierungssystem
             
@@ -136,3 +145,15 @@ elif selected_option == "Reservierungssystem":
                     # Reservierung für das ausgewählte Gerät erstellen
                     ReservationSystem.reserve_device(current_device_name, current_user_id, start_time, end_time)
                     st.write("Reservierung für diesen Benutzer erstellt.")
+
+#Wartung implementieren
+elif selected_option == "Wartungssystem":
+    st.write("## Wartungssystem")
+
+    wartungen = Wartungskalender.naechste_wartungen_abrufen()
+    for wartung in wartungen:
+        st.write(f"Gerät {wartung['geraete_id']} - Nächste Wartung: {wartung['naechste_wartung']}")
+
+    quartalskosten = Wartungskalender.wartungskosten_pro_quartal_berechnen()
+    st.write(f"Wartungskosten für dieses Quartal: {quartalskosten} Euro")
+
