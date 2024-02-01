@@ -4,12 +4,13 @@ from queries import find_devices
 from devices import Device
 from users import User
 from validate_email_address import validate_email
-
+from wartung import Wartungskalender
+from datetime import datetime,timedelta
 # Eine Überschrift der ersten Ebene
 st.write("# Gerätemanagement")
 
 # Navigation
-selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung"])
+selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung","Wartungssystem"])
 
 if selected_option == "Geräteverwaltung":
     # Geräteverwaltung
@@ -86,3 +87,13 @@ elif selected_option == "Nutzerverwaltung":
             # Methode in der User-Klasse aufrufen
             result_message = User.validate_and_create_user(user_name, email)
             st.write(result_message)
+#Wartung implementieren
+elif selected_option == "Wartungssystem":
+    st.write("## Wartungssystem")
+
+    wartungen = Wartungskalender.naechste_wartungen_abrufen()
+    for wartung in wartungen:
+        st.write(f"Gerät {wartung['geraete_id']} - Nächste Wartung: {wartung['naechste_wartung']}")
+
+    quartalskosten = Wartungskalender.wartungskosten_pro_quartal_berechnen()
+    st.write(f"Wartungskosten für dieses Quartal: {quartalskosten} Euro")
