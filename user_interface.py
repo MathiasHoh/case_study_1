@@ -4,13 +4,19 @@ from queries import find_devices
 from devices import Device
 from users import User
 from validate_email_address import validate_email
+
+from reservierungssystem import ReservationSystem
+
 from wartung import Wartungskalender
 from datetime import datetime,timedelta
+
 # Eine Überschrift der ersten Ebene
 st.write("# Gerätemanagement")
 
 # Navigation
-selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung","Wartungssystem"])
+
+selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung", "Reservierungssystem","Wartungssystem"])
+
 
 if selected_option == "Geräteverwaltung":
     # Geräteverwaltung
@@ -22,12 +28,12 @@ if selected_option == "Geräteverwaltung":
     if device_action == "Neues Gerät":
         # Wenn ein neues Gerät erstellt wird
         with st.form("New Device"):
-            st.write("Neues Gerät hinzufügen")
 
             device_name = st.text_input("Gerätename")
             managed_by_user_id = st.text_input("Geräte-Verantwortlicher (Nutzer-ID)")
 
             # Submit button
+
             submitted_new_device = st.form_submit_button("Neues Gerät hinzufügen")
 
             if submitted_new_device and not Device.device_exists(device_name):
@@ -62,10 +68,11 @@ if selected_option == "Geräteverwaltung":
                 text_input_val = st.text_input("Geräte-Verantwortlicher", value=loaded_device.managed_by_user_id)
                 loaded_device.managed_by_user_id = text_input_val
 
-
+                # Submit button
                 submitted = st.form_submit_button("Submit")
 
-                # Submit button.
+
+
 
                 if User.user_exists(loaded_device.managed_by_user_id):
                     
@@ -73,7 +80,17 @@ if selected_option == "Geräteverwaltung":
                         loaded_device.store_data()
                         st.write("Data stored.")
                         st.rerun()
-                        
+
+
+            # Button um ein Gerät zu löschen
+            if st.button("Gerät löschen"):
+                deleted = Device.delete_device(current_device_name)
+                if deleted:
+                    st.write(F"Gerät {current_device_name} wurde gelöscht!")
+                else:
+                    st.warning(F"Gerät {current_device_name} nicht gefunden!")
+
+
 elif selected_option == "Nutzerverwaltung":
     st.write("## Nutzerverwaltung")
 
@@ -87,6 +104,48 @@ elif selected_option == "Nutzerverwaltung":
             # Methode in der User-Klasse aufrufen
             result_message = User.validate_and_create_user(user_name, email)
             st.write(result_message)
+
+
+# Reservierungssystem
+            
+elif selected_option == "Reservierungssystem":
+    st.write("## Reservierungssystem")
+    devices_in_db = find_devices()
+
+    if devices_in_db:
+        current_device_name = st.selectbox(
+            'Gerät auswählen',
+        options=devices_in_db, key="sbDevice")
+
+        if current_device_name in devices_in_db:
+            loaded_device = Device.load_data_by_device_name(current_device_name)
+            st.write(f"{loaded_device}")
+
+            # Anzeigen der Reservierungen für das ausgewählte Gerät
+            reservations = ReservationSystem.get_reservations_for_device(current_device_name)
+
+            if reservations:
+                st.write("Reservierungen:")
+                for reservation in reservations:
+                    st.write(reservation)
+            else:
+                st.write("Keine Reservierungen für dieses Gerät.")
+
+            # Reservierung für das ausgewählte Gerät erstellen
+            with st.form("Reservierung erstellen"):
+                start_time = st.date_input("Startdatum")
+                end_time = st.date_input("Enddatum")
+
+                submitted_reservation = st.form_submit_button("Reservierung erstellen")
+
+                if submitted_reservation:
+                    
+                    current_user_id = loaded_device.managed_by_user_id
+
+                    # Reservierung für das ausgewählte Gerät erstellen
+                    ReservationSystem.reserve_device(current_device_name, current_user_id, start_time, end_time)
+                    st.write("Reservierung für diesen Benutzer erstellt.")
+
 #Wartung implementieren
 elif selected_option == "Wartungssystem":
     st.write("## Wartungssystem")
@@ -97,3 +156,4 @@ elif selected_option == "Wartungssystem":
 
     quartalskosten = Wartungskalender.wartungskosten_pro_quartal_berechnen()
     st.write(f"Wartungskosten für dieses Quartal: {quartalskosten} Euro")
+
