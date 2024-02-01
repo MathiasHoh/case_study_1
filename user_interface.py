@@ -5,12 +5,13 @@ from queries import find_devices
 from devices import Device
 from users import User
 from validate_email_address import validate_email
+from wartungsverwaltung import Wartungsverwaltung
 
 # Eine Überschrift der ersten Ebene
 st.write("# Gerätemanagement")
 
 # Navigation
-selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung"])
+selected_option = st.sidebar.selectbox("Menü", ["Geräteverwaltung", "Nutzerverwaltung", "Wartungsverwaltung"])
 
 if selected_option == "Geräteverwaltung":
     # Geräteverwaltung
@@ -26,6 +27,7 @@ if selected_option == "Geräteverwaltung":
 
             device_name = st.text_input("Gerätename")
             managed_by_user_id = st.text_input("Geräte-Verantwortlicher (Nutzer-ID)")
+            
 
             # Submit button
             submitted_new_device = st.form_submit_button("Neues Gerät hinzufügen")
@@ -87,3 +89,15 @@ elif selected_option == "Nutzerverwaltung":
             # Methode in der User-Klasse aufrufen
             result_message = User.validate_and_create_user(user_name, email)
             st.write(result_message)
+
+
+# Wartungsverwaltung
+if selected_option == "Wartungsverwaltung":
+    wartungsverwaltung = Wartungsverwaltung()  # Instantiate the Wartungsverwaltung class
+
+    selected_wartung_option = st.sidebar.selectbox("Wartungs-Management", ["Wartungstermine anzeigen", "Wartungskosten pro Quartal anzeigen"])
+
+    if selected_wartung_option == "Wartungstermine anzeigen":
+        wartungsverwaltung.show_next_maintenance_dates()
+    elif selected_wartung_option == "Wartungskosten pro Quartal anzeigen":
+        wartungsverwaltung.show_maintenance_costs_per_quarter()
