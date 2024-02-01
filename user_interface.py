@@ -5,6 +5,7 @@ from queries import find_devices
 from devices import Device
 from users import User
 from validate_email_address import validate_email
+from reservierungssystem import ReservationSystem
 
 # Eine Überschrift der ersten Ebene
 st.write("# Gerätemanagement")
@@ -109,7 +110,29 @@ elif selected_option == "Reservierungssystem":
 
         if current_device_name in devices_in_db:
             loaded_device = Device.load_data_by_device_name(current_device_name)
-            st.write(f":{loaded_device}")
+            st.write(f"{loaded_device}")
 
-   # with st.form("Reservierungen"):
-        
+            # Anzeigen der Reservierungen für das ausgewählte Gerät
+            reservations = ReservationSystem.get_reservations_for_device(current_device_name)
+
+            if reservations:
+                st.write("Reservierungen:")
+                for reservation in reservations:
+                    st.write(reservation)
+            else:
+                st.write("Keine Reservierungen für dieses Gerät.")
+
+            # Reservierung für das ausgewählte Gerät erstellen
+            with st.form("Reservierung erstellen"):
+                start_time = st.date_input("Startdatum")
+                end_time = st.date_input("Enddatum")
+
+                submitted_reservation = st.form_submit_button("Reservierung erstellen")
+
+                if submitted_reservation:
+                    
+                    current_user_id = loaded_device.managed_by_user_id
+
+                    # Reservierung für das ausgewählte Gerät erstellen
+                    ReservationSystem.reserve_device(current_device_name, current_user_id, start_time, end_time)
+                    st.write("Reservierung für diesen Benutzer erstellt.")
