@@ -155,5 +155,9 @@ elif selected_option == "Wartungssystem":
         st.write(f"Gerät {wartung['geraete_id']} - Nächste Wartung: {wartung['naechste_wartung']}")
 
     quartalskosten = Wartungskalender.wartungskosten_pro_quartal_berechnen()
+    mtn_cost = {"Q1": 1500, "Q2": 1500, "Q3": 1500, "Q4": 1500}
+    st.subheader("Wartungskosten per Quartal")
+    for quarter,cost in mtn_cost.items():
+        st.write(f"{quarter}: {cost} Euro")
+    st.write(f"Anzahl der Geräte: {len(find_devices())}")
     st.write(f"Wartungskosten für dieses Quartal: {quartalskosten} Euro")
-
